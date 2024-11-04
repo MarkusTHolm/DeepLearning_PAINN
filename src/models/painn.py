@@ -59,3 +59,47 @@ class PaiNN(nn.Module):
             contributions to the overall molecular property prediction.
         """
         raise NotImplementedError
+    
+    def message(self):
+
+        # For computing phi
+        self.sj_linear = nn.Sequential(
+            nn.Linear(self.num_features, self.num_features),
+            nn.SiLU(),
+            nn.Linear(self.num_features, self.num_features*3)
+        )
+
+        # Compute phi
+        phi = self.sj_linear()
+
+        # Compute W
+        self.radial_basis_function(),
+        self.rbf_linear = nn.Linear(self.num_rbf_features, self.num_features*3)
+        W = self.cosine_cutoff()
+
+        # Compute normalised positions
+        rj_norm = rj/torch.norm(rj)
+
+        # Multiply before split
+        pre_split = phi*W
+
+        # Split values
+        # split_vj = pre_split[] ?? 
+        # split_rj = pre_split[] ??
+        # delta_sim = pre_split[] ??
+
+        delta_vim = torch.sum(vj*split_vj + split_rj*rj_norm)
+       
+        return delta_sim, delta_vim
+    
+    def update():
+        raise NotImplementedError
+    
+    def gated_equivariant_block():
+        raise NotImplementedError
+    
+    def radial_basis_function():
+        raise NotImplementedError
+    
+    def cosine_cutoff():
+        raise NotImplementedError
