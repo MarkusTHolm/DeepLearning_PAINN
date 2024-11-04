@@ -59,9 +59,12 @@ class PaiNN(nn.Module):
             contributions to the overall molecular property prediction.
         """
         raise NotImplementedError
-    
-    def message(self):
 
+class Message():   
+    def __init__(self):
+        pass
+
+    def foward(self):
         # For computing phi
         self.sj_linear = nn.Sequential(
             nn.Linear(self.num_features, self.num_features),
@@ -84,9 +87,9 @@ class PaiNN(nn.Module):
         pre_split = phi*W
 
         # Split values
-        # split_vj = pre_split[] ?? 
-        # split_rj = pre_split[] ??
-        # delta_sim = pre_split[] ??
+        split_vj = pre_split[0:self.num_features]  
+        split_rj = pre_split[0:self.num_features]
+        delta_sim = pre_split[0:self.num_features]
 
         delta_vim = torch.sum(vj*split_vj + split_rj*rj_norm)
        
