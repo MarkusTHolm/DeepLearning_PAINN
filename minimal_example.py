@@ -3,6 +3,7 @@ Basic example of how to train the PaiNN model to predict the QM9 property
 "internal energy at 0K". This property (and the majority of the other QM9
 properties) is computed as a sum of atomic contributions.
 """
+import sys
 import torch
 import argparse
 from tqdm import trange
@@ -59,9 +60,9 @@ def main():
     )
     dm.prepare_data()
     dm.setup()
-    y_mean, y_std, atom_refs = dm.get_target_stats(
-        remove_atom_refs=True, divide_by_atoms=True
-    )
+    # y_mean, y_std, atom_refs = dm.get_target_stats(
+    #     remove_atom_refs=True, divide_by_atoms=True
+    # )
 
     painn = PaiNN(
         num_message_passing_layers=args.num_message_passing_layers,
@@ -71,18 +72,18 @@ def main():
         num_unique_atoms=args.num_unique_atoms,
         cutoff_dist=args.cutoff_dist,
     )
-    post_processing = AtomwisePostProcessing(
-        args.num_outputs, y_mean, y_std, atom_refs
-    )
+    # post_processing = AtomwisePostProcessing(
+    #     args.num_outputs, y_mean, y_std, atom_refs
+    # )
 
     painn.to(device)
-    post_processing.to(device)
+    # post_processing.to(device)
 
-    optimizer = torch.optim.AdamW(
-        painn.parameters(),
-        lr=args.lr,
-        weight_decay=args.weight_decay,
-    )
+    # optimizer = torch.optim.AdamW(
+    #     painn.parameters(),
+    #     lr=args.lr,
+    #     weight_decay=args.weight_decay,
+    # )
 
     painn.train()
     pbar = trange(args.num_epochs)
@@ -97,6 +98,7 @@ def main():
                 atom_positions=batch.pos,
                 graph_indexes=batch.batch
             )
+            sys.exit()
             preds = post_processing(
                 atoms=batch.z,
                 graph_indexes=batch.batch,

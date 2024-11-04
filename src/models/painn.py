@@ -32,8 +32,6 @@ class PaiNN(nn.Module):
                 two nodes (atoms) are neighbours.
         """
         super().__init__()
-        raise NotImplementedError
-
 
     def forward(
         self,
