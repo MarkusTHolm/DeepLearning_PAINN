@@ -161,12 +161,14 @@ class Message():
     
 class Update():
         raise NotImplementedError
+
     
+# def radial_basis_function():
+#     raise NotImplementedError
+
+# def cosine_cutoff():
+#     raise NotImplementedError
+
+        
     # def gated_equivariant_block():
-    #     raise NotImplementedError
-    
-    # def radial_basis_function():
-    #     raise NotImplementedError
-    
-    # def cosine_cutoff():
     #     raise NotImplementedError
