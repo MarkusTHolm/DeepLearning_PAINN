@@ -5,6 +5,8 @@ import torch.nn as nn
 class PaiNN(nn.Module):
     """
     Polarizable Atom Interaction Neural Network with PyTorch.
+    
+    This is Sebastian
     """
     def __init__(
         self,
