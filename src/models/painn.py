@@ -1,6 +1,10 @@
 import torch
 import torch.nn as nn
 
+import logging
+from omegaconf import DictConfig
+import hydra
+import time
 
 class PaiNN(nn.Module):
     """
@@ -33,6 +37,8 @@ class PaiNN(nn.Module):
         """
         super().__init__()
 
+        self.logger = logging.getLogger(__name__)
+
         # Initialize inputs
         self.num_message_passing_layers = num_message_passing_layers
         self.num_features = num_features
@@ -61,9 +67,9 @@ class PaiNN(nn.Module):
 
         # Initialize final reduction layers
         self.final_reduction = nn.Sequential(
-            nn.Linear(self.num_features, self.num_features, bias=True),
+            nn.Linear(self.num_features, self.num_features//2, bias=True),
             nn.SiLU(),
-            nn.Linear(self.num_features, self.num_features, bias=True)
+            nn.Linear(self.num_features//2, 1, bias=True)
         )
 
     def forward(
@@ -93,11 +99,13 @@ class PaiNN(nn.Module):
 
         """
 
-        N_i = len(atoms)
-
         # Make adjecency matrix
         A_row, A_col = self.make_adjecency_matrix(atom_positions, graph_indexes)
 
+        start = time.time()
+
+        # Dimensions of nodes and edges
+        N_i = len(atoms)
         N_j = len(A_col)
 
         # Find relative positions
@@ -116,39 +124,48 @@ class PaiNN(nn.Module):
         # Perform message passing
         for i in range(self.num_message_passing_layers):
             delta_vi, delta_si = self.message_layers[i](v_j, s_j, r_ij, N_i, A_row) #TODO: Could insert N_i and A_row into message in another way
-            v_i += delta_vi
-            s_i += delta_si
+            v_i = v_i + delta_vi
+            s_i = s_i + delta_si
             delta_vi, delta_si = self.update_layers[i](v_i, s_i, N_i)
-            v_i += delta_vi
-            s_i += delta_si
+            v_i = v_i + delta_vi
+            s_i = s_i + delta_si
         
         # Final reduction block
-        output = self.final_reduction(s_i)
+        atomic_contributions = self.final_reduction(s_i)
 
-        energy = output.sum()
+        self.logger.debug(f"Time spent in rest: {time.time() - start})")
 
-        print("Hello")
+        return atomic_contributions
     
     def make_adjecency_matrix(self, atom_positions, graph_indexes):
+        """ Create adjecency matrix """
+        
+        start = time.time()
 
-        N = len(graph_indexes)
+        N_i = len(graph_indexes)
         A_col = []
         A_row = []
 
-        indices = torch.arange(N).cuda()
+        indices = torch.arange(N_i)
+        graph_indexes = graph_indexes.cpu()
+        atom_positions = atom_positions.cpu()
 
         for i, gi in enumerate(graph_indexes):
             matching_graph_index = graph_indexes == gi
-            matching_graph_index[i] = False   # Remove the current index from list (to avoid loops)
+            matching_graph_index[i] = False   # Remove the current index from list (to avoid loops in graph)
             pos_same_molecule = atom_positions[matching_graph_index]
             dist_mask = torch.norm(pos_same_molecule - atom_positions[i], 
                                    p=2, dim=1) < self.cutoff_dist
-
-            A_row.append(torch.Tensor.tile(torch.IntTensor([i]), int(dist_mask.sum()) ).cuda())
+            A_row.append(torch.Tensor.tile(torch.IntTensor([i]), int(dist_mask.sum()) ))
             A_col.append(indices[matching_graph_index][dist_mask])
 
         A_row = torch.cat(A_row)
         A_col = torch.cat(A_col)
+
+        A_row = A_row.to(device=self.device)
+        A_col = A_col.to(device=self.device)
+
+        self.logger.debug(f"Time spent in adjecency matrix: {time.time() - start})")
 
         return A_row, A_col
 
@@ -263,11 +280,3 @@ class Update(nn.Module):
         delta_siu = tmp_scalar_prod*a_sv + a_ss
 
         return delta_viu, delta_siu
-#class Update():
-#        raise NotImplementedError
-
-    
-
-        
-    # def gated_equivariant_block():
-    #     raise NotImplementedError

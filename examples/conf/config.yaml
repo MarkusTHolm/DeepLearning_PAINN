@@ -1,6 +1,7 @@
 hydra:
   run:
     dir: /home/mtaho/Code/Courses/DeepLearning_PAINN/examples
+  
 
 
 defaults:

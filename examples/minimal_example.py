@@ -12,16 +12,22 @@ from src.data import QM9DataModule
 from pytorch_lightning import seed_everything
 from src.models import PaiNN, AtomwisePostProcessing
 
+import logging
+from omegaconf import DictConfig
 import hydra
-
+import time
 
 @hydra.main(config_path=f'./conf',
             config_name='config.yaml',
             version_base='1.1')     
 def main(cfg):
+    logger = logging.getLogger(__name__)
+
     cfg = cfg.experiment
     seed_everything(cfg.seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    torch.autograd.set_detect_anomaly(True)
 
     dm = QM9DataModule(
         target=cfg.data.target,
@@ -69,11 +75,15 @@ def main(cfg):
         for batch in dm.train_dataloader():
             batch = batch.to(device)
 
+            start = time.time()
+
             atomic_contributions = painn(
                 atoms=batch.z,
                 atom_positions=batch.pos,
                 graph_indexes=batch.batch
             )
+            
+            logger.debug(f"Time spent in PaiNN model: {time.time() - start})")
 
             preds = post_processing(
                 atoms=batch.z,
@@ -82,12 +92,19 @@ def main(cfg):
             )
             loss_step = F.mse_loss(preds, batch.y, reduction='sum')
 
+            start = time.time()
+
             loss = loss_step / len(batch.y)
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
             loss_epoch += loss_step.detach().item()
+
+            logger.debug(f"Time spent in Post and Loss step: {time.time() - start})")
+
+            # sys.exit()
+
         loss_epoch /= len(dm.data_train)
         pbar.set_postfix_str(f'Train loss: {loss_epoch:.3e}')
 
