@@ -1,0 +1,24 @@
+
+seed: 10
+
+data:
+  target: 7
+  data_dir: 'data/'
+  batch_size_train: 100
+  batch_size_inference: 1000
+  num_workers: 0
+  splits: [110000, 10000, 10831]
+  subset_size: null
+
+model:
+  num_message_passing_layers: 3
+  num_features: 128
+  num_outputs: 1
+  num_rbf_features: 20
+  num_unique_atoms: 100
+  cutoff_dist: 5.0
+
+training:
+  lr: 5e-4
+  weight_decay: 0.01
+  num_epochs: 1000

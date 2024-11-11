@@ -12,51 +12,26 @@ from src.data import QM9DataModule
 from pytorch_lightning import seed_everything
 from src.models import PaiNN, AtomwisePostProcessing
 
-
-def cli():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--seed', default=0)
-
-    # Data
-    parser.add_argument('--target', default=7, type=int) # 7 => Internal energy at 0K
-    parser.add_argument('--data_dir', default='data/', type=str)
-    parser.add_argument('--batch_size_train', default=100, type=int)
-    parser.add_argument('--batch_size_inference', default=1000, type=int)
-    parser.add_argument('--num_workers', default=0, type=int)
-    parser.add_argument('--splits', nargs=3, default=[110000, 10000, 10831], type=int) # [num_train, num_val, num_test]
-    parser.add_argument('--subset_size', default=None, type=int)
-
-    # Model
-    parser.add_argument('--num_message_passing_layers', default=3, type=int)
-    parser.add_argument('--num_features', default=128, type=int)
-    parser.add_argument('--num_outputs', default=1, type=int)
-    parser.add_argument('--num_rbf_features', default=20, type=int)
-    parser.add_argument('--num_unique_atoms', default=100, type=int)
-    parser.add_argument('--cutoff_dist', default=5.0, type=float)
-
-    # Training
-    parser.add_argument('--lr', default=5e-4, type=float)
-    parser.add_argument('--weight_decay', default=0.01, type=float)
-    parser.add_argument('--num_epochs', default=1000, type=int)
-
-    args = parser.parse_args()
-    return args
+import hydra
 
 
-def main():
-    args = cli()
-    seed_everything(args.seed)
+@hydra.main(config_path=f'./conf',
+            config_name='config.yaml',
+            version_base='1.1')     
+def main(cfg):
+    cfg = cfg.experiment
+    seed_everything(cfg.seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
     dm = QM9DataModule(
-        target=args.target,
-        data_dir=args.data_dir,
-        batch_size_train=args.batch_size_train,
-        batch_size_inference=args.batch_size_inference,
-        num_workers=args.num_workers,
-        splits=args.splits,
-        seed=args.seed,
-        subset_size=args.subset_size,
+        target=cfg.data.target,
+        data_dir=cfg.data.data_dir,
+        batch_size_train=cfg.data.batch_size_train,
+        batch_size_inference=cfg.data.batch_size_inference,
+        num_workers=cfg.data.num_workers,
+        splits=cfg.data.splits,
+        seed=cfg.seed,
+        subset_size=cfg.data.subset_size,
     )
     dm.prepare_data()
     dm.setup()
@@ -65,12 +40,12 @@ def main():
     # )
 
     painn = PaiNN(
-        num_message_passing_layers=args.num_message_passing_layers,
-        num_features=args.num_features,
-        num_outputs=args.num_outputs, 
-        num_rbf_features=args.num_rbf_features,
-        num_unique_atoms=args.num_unique_atoms,
-        cutoff_dist=args.cutoff_dist,
+        num_message_passing_layers=cfg.model.num_message_passing_layers,
+        num_features=cfg.model.num_features,
+        num_outputs=cfg.model.num_outputs, 
+        num_rbf_features=cfg.model.num_rbf_features,
+        num_unique_atoms=cfg.model.num_unique_atoms,
+        cutoff_dist=cfg.model.cutoff_dist,
     )
     # post_processing = AtomwisePostProcessing(
     #     args.num_outputs, y_mean, y_std, atom_refs
@@ -81,12 +56,12 @@ def main():
 
     # optimizer = torch.optim.AdamW(
     #     painn.parameters(),
-    #     lr=args.lr,
-    #     weight_decay=args.weight_decay,
+    #     lr=cfg.training.lr,
+    #     weight_decay=cfg.training.weight_decay,
     # )
 
     painn.train()
-    pbar = trange(args.num_epochs)
+    pbar = trange(cfg.training.num_epochs)
     for epoch in pbar:
 
         loss_epoch = 0.
@@ -134,7 +109,7 @@ def main():
             mae += F.l1_loss(preds, batch.y, reduction='sum')
     
     mae /= len(dm.data_test)
-    unit_conversion = dm.unit_conversion[args.target]
+    unit_conversion = dm.unit_conversion[cfg.data.target]
     print(f'Test MAE: {unit_conversion(mae):.3f}')
 
 

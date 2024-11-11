@@ -159,8 +159,8 @@ class Message():
        
         return delta_sim, delta_vim
     
-class Update():
-        raise NotImplementedError
+#class Update():
+#        raise NotImplementedError
 
     
 # def radial_basis_function():
