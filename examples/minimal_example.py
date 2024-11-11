@@ -3,7 +3,7 @@ Basic example of how to train the PaiNN model to predict the QM9 property
 "internal energy at 0K". This property (and the majority of the other QM9
 properties) is computed as a sum of atomic contributions.
 """
-import sys
+import sys, os
 import torch
 import argparse
 from tqdm import trange
@@ -46,6 +46,7 @@ def main(cfg):
         num_rbf_features=cfg.model.num_rbf_features,
         num_unique_atoms=cfg.model.num_unique_atoms,
         cutoff_dist=cfg.model.cutoff_dist,
+        device=device,
     )
     # post_processing = AtomwisePostProcessing(
     #     args.num_outputs, y_mean, y_std, atom_refs
