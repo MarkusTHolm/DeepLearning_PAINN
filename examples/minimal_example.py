@@ -4,6 +4,9 @@ Basic example of how to train the PaiNN model to predict the QM9 property
 properties) is computed as a sum of atomic contributions.
 """
 import sys, os
+# Add the root directory of your project to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import torch
 import argparse
 from tqdm import trange
