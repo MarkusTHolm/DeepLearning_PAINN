@@ -35,9 +35,9 @@ def main(cfg):
     )
     dm.prepare_data()
     dm.setup()
-    # y_mean, y_std, atom_refs = dm.get_target_stats(
-    #     remove_atom_refs=True, divide_by_atoms=True
-    # )
+    y_mean, y_std, atom_refs = dm.get_target_stats(
+        remove_atom_refs=True, divide_by_atoms=True
+    )
 
     painn = PaiNN(
         num_message_passing_layers=cfg.model.num_message_passing_layers,
@@ -48,18 +48,18 @@ def main(cfg):
         cutoff_dist=cfg.model.cutoff_dist,
         device=device,
     )
-    # post_processing = AtomwisePostProcessing(
-    #     args.num_outputs, y_mean, y_std, atom_refs
-    # )
+    post_processing = AtomwisePostProcessing(
+        cfg.model.num_outputs, y_mean, y_std, atom_refs
+    )
 
     painn.to(device)
-    # post_processing.to(device)
+    post_processing.to(device)
 
-    # optimizer = torch.optim.AdamW(
-    #     painn.parameters(),
-    #     lr=cfg.training.lr,
-    #     weight_decay=cfg.training.weight_decay,
-    # )
+    optimizer = torch.optim.AdamW(
+        painn.parameters(),
+        lr=cfg.training.lr,
+        weight_decay=cfg.training.weight_decay,
+    )
 
     painn.train()
     pbar = trange(cfg.training.num_epochs)
@@ -74,7 +74,7 @@ def main(cfg):
                 atom_positions=batch.pos,
                 graph_indexes=batch.batch
             )
-            sys.exit()
+
             preds = post_processing(
                 atoms=batch.z,
                 graph_indexes=batch.batch,

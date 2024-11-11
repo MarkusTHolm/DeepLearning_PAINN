@@ -33,6 +33,7 @@ class PaiNN(nn.Module):
         """
         super().__init__()
 
+        # Initialize inputs
         self.num_message_passing_layers = num_message_passing_layers
         self.num_features = num_features
         self.num_outputs = num_outputs
@@ -41,20 +42,29 @@ class PaiNN(nn.Module):
         self.cutoff_dist = cutoff_dist
         self.device = device
 
+        # Initialize embedding
         self.embedding = nn.Embedding(self.num_unique_atoms, self.num_features,
                                       device=self.device)
-        
+        # Intialize message layers
         self.message_layers = nn.ModuleList([
             Message(self.num_features, self.num_rbf_features, 
                     self.cutoff_dist, self.device)
             for _ in range(self.num_message_passing_layers)
         ])
 
+        # Initialize update layers
         self.update_layers = nn.ModuleList([
             Update(self.num_features, self.num_rbf_features,
                    self.cutoff_dist, self.device)
             for _ in range(self.num_message_passing_layers)
         ])
+
+        # Initialize final reduction layers
+        self.final_reduction = nn.Sequential(
+            nn.Linear(self.num_features, self.num_features, bias=True),
+            nn.SiLU(),
+            nn.Linear(self.num_features, self.num_features, bias=True)
+        )
 
     def forward(
         self,
@@ -100,8 +110,8 @@ class PaiNN(nn.Module):
         s_i = self.embedding(Z_i)
         s_j = self.embedding(Z_j)
 
-        v_i = torch.zeros((N_i, self.num_features, 3), device=self.device)
-        v_j = torch.zeros((N_j, self.num_features, 3), device=self.device)
+        v_i = torch.zeros((N_i, 3, self.num_features), device=self.device)
+        v_j = torch.zeros((N_j, 3, self.num_features), device=self.device)
 
         # Perform message passing
         for i in range(self.num_message_passing_layers):
@@ -113,14 +123,7 @@ class PaiNN(nn.Module):
             s_i += delta_si
         
         # Final reduction block
-
-        self.final_reduction = nn.Sequential(
-            nn.Linear(self.num_features, self.num_features),
-            nn.SiLU(),
-            nn.Linear(self.num_features, self.num_features)
-        )
-
-        output = self.final_reduction(s_j)
+        output = self.final_reduction(s_i)
 
         energy = output.sum()
 
@@ -187,18 +190,18 @@ class Message(nn.Module):
         conv_product = phi*W
 
         # Split values
-        split_vj = conv_product[:,0:self.num_features].unsqueeze(2)  
-        split_rj = conv_product[:,self.num_features:self.num_features*2].unsqueeze(2)
+        split_vj = conv_product[:,0:self.num_features].unsqueeze(1)  
+        split_rj = conv_product[:,self.num_features:self.num_features*2].unsqueeze(1)
         delta_sjm = conv_product[:,self.num_features*2:self.num_features*3]
 
         # Compute normalised positions
         rj_norm = r_ij/r_ij_norm.unsqueeze(1)
-        rj_norm = rj_norm.unsqueeze(1)
+        rj_norm = rj_norm.unsqueeze(2)
 
         # Compute temporary value for v_im
         tmp_vim = v_j*split_vj + split_rj*rj_norm
 
-        delta_vim = torch.zeros((N_i, self.num_features, 3), device=self.device)
+        delta_vim = torch.zeros((N_i, 3, self.num_features), device=self.device)
         delta_sim = torch.zeros((N_i, self.num_features), device=self.device)
         
         delta_vim.index_add_(0, A_row, tmp_vim)
@@ -241,7 +244,6 @@ class Update(nn.Module):
 
     def forward(self, v_i, s_i, N_i):
 
-        v_i = v_i.permute([0, 2, 1])
         tmp_U_vi = self.linear_nobias_U(v_i)
         tmp_V_vi = self.linear_nobias_V(v_i)
 

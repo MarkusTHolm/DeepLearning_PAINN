@@ -4,5 +4,6 @@ data/raw/*
 *.out
 *.egg-info
 
+.vscode/
 /outputs/
 /examples/data/
