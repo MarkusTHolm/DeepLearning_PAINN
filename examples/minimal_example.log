@@ -2925,3 +2925,6 @@
 [2024-11-18 08:54:59,804][fsspec.local][DEBUG] - open file: /home/mtaho/Code/Courses/DeepLearning_PAINN/examples/data/processed/data_v3.pt
 [2024-11-18 10:40:45,886][__main__][INFO] - Running on device: cpu
 [2024-11-18 10:44:25,106][__main__][INFO] - Running on device: cuda
+[2024-11-18 11:42:12,312][__main__][INFO] - Running on device: cpu
+[2024-11-18 11:50:24,351][__main__][INFO] - Running on device: cpu
+[2024-11-18 11:53:45,039][__main__][INFO] - Running on device: cuda
