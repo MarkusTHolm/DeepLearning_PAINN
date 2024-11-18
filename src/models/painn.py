@@ -231,7 +231,7 @@ class Message(nn.Module):
         phi = self.sj_linear(s_j)
 
         # Compute W
-        rbf_output = self.radial_basis_functions(r_ij, r_ij_norm)
+        rbf_output = self.radial_basis_functions(r_ij_norm)
         rbf_output = self.rbf_linear(rbf_output)
         W = self.cosine_cutoff(rbf_output, r_ij_norm)
 
@@ -258,12 +258,11 @@ class Message(nn.Module):
 
         return delta_vim, delta_sim
     
-    def radial_basis_functions(self, r_ij, r_ij_norm):
+    def radial_basis_functions(self, r_ij_norm):
         Nrbf = 20
-        rbf_output = torch.empty((len(r_ij), Nrbf), device=self.device)
-        for n in range(1, Nrbf+1):
-            rbf_output[:, n-1] = torch.sin(n*torch.pi/self.cutoff_dist*r_ij_norm)/r_ij_norm
-        
+        ns = torch.arange(1, Nrbf+1, device=self.device).unsqueeze(0)
+        r_ij_unsqueeze = r_ij_norm.unsqueeze(1)
+        rbf_output = torch.sin(ns*torch.pi/self.cutoff_dist*r_ij_unsqueeze)/r_ij_unsqueeze        
         return rbf_output
 
     def cosine_cutoff(self, rbf_output, r_ij_norm):
