@@ -15,8 +15,9 @@ from src.data import QM9DataModule
 from pytorch_lightning import seed_everything
 from src.models import PaiNN, AtomwisePostProcessing
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-
 import hydra
+import pickle
+import os
 
 
 @hydra.main(config_path=f'./conf',
@@ -70,71 +71,104 @@ def main(cfg):
                                   mode='min',
                                   factor=cfg.training.decay_factor,
                                   patience=cfg.training.decay_patience)
-
     
+    
+    # File to save losses
+    data_file = f"{cfg.data.results_dir}/data.pickle"
+    if os.path.exists(data_file):
+        # Load existing logs if they exist
+        with open(data_file, 'rb') as f:
+            logs = pickle.load(f)
+    else:
+        logs = {'train_loss': [],
+                'val_loss': [],
+                'lr': [],
+                'epoch': [],
+                'test_loss': []}  # Initialize logs
+    
+
+    # Initialize
     pbar = trange(cfg.training.num_epochs)
-    val_losses = []
-    for epoch in pbar:
-        
-        # Training
-        painn.train()
-        loss_epoch = 0.
-        for i, batch in enumerate(dm.train_dataloader()):
-            batch = batch.to(device)
-            atomic_contributions = painn(
-                atoms=batch.z,
-                atom_positions=batch.pos,
-                graph_indexes=batch.batch
-            )
-            preds = post_processing(
-                atoms=batch.z,
-                graph_indexes=batch.batch,
-                atomic_contributions=atomic_contributions,
-            )
-            loss_step = F.mse_loss(preds, batch.y, reduction='sum')
-            loss = loss_step / len(batch.y)
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
-            loss_epoch += loss_step.detach().item()
-        loss_epoch /= len(dm.data_train)
-                   
-        # Validation
-        painn.eval()
-        val_loss_epoch = 0
-        with torch.no_grad():
-            for val_batch in dm.val_dataloader():
-                val_batch = val_batch.to(device)
+    early_stop_counter = 0
+    best_val_loss = float('inf')
+    
+    try:
+        for epoch in pbar:
+            
+            # Save current
+            logs['lr'].append(scheduler.get_last_lr()[0])
+            logs['epoch'].append(epoch)
+            
+            # Training
+            painn.train()
+            loss_epoch = 0.
+            for i, batch in enumerate(dm.train_dataloader()):
+                batch = batch.to(device)
                 atomic_contributions = painn(
-                    atoms=val_batch.z,
-                    atom_positions=val_batch.pos,
-                    graph_indexes=val_batch.batch
+                    atoms=batch.z,
+                    atom_positions=batch.pos,
+                    graph_indexes=batch.batch
                 )
                 preds = post_processing(
-                    atoms=val_batch.z,
-                    graph_indexes=val_batch.batch,
+                    atoms=batch.z,
+                    graph_indexes=batch.batch,
                     atomic_contributions=atomic_contributions,
                 )
-                val_loss_epoch += F.mse_loss(preds, val_batch.y, reduction='sum').detach().item()
-        val_loss_epoch /= len(dm.data_val)
-        val_losses.append(val_loss_epoch)
+                loss_step = F.mse_loss(preds, batch.y, reduction='sum')
+                loss = loss_step / len(batch.y)
+                optimizer.zero_grad()
+                loss.backward()
+                optimizer.step()
+                loss_epoch += loss_step.detach().item()
+            loss_epoch /= len(dm.data_train)
+            logs['train_loss'].append(loss_epoch)
+                    
+            # Validation
+            painn.eval()
+            val_loss_epoch = 0
+            with torch.no_grad():
+                for val_batch in dm.val_dataloader():
+                    val_batch = val_batch.to(device)
+                    atomic_contributions = painn(
+                        atoms=val_batch.z,
+                        atom_positions=val_batch.pos,
+                        graph_indexes=val_batch.batch
+                    )
+                    preds = post_processing(
+                        atoms=val_batch.z,
+                        graph_indexes=val_batch.batch,
+                        atomic_contributions=atomic_contributions,
+                    )
+                    val_loss_epoch += F.mse_loss(preds, val_batch.y, reduction='sum').detach().item()
+            val_loss_epoch /= len(dm.data_val)
+            logs['val_loss'].append(val_loss_epoch)
+            
+            # Save logs to file after every epoch
+            with open(data_file, 'wb') as f:
+                pickle.dump(logs, f)
 
-        # Update learning rate scheduler
-        scheduler.step(val_loss_epoch)
+            # Update learning rate scheduler
+            scheduler.step(val_loss_epoch)
 
-        # Early stopping
-        if val_loss_epoch < best_val_loss:
-            best_val_loss = val_loss_epoch
-            early_stop_counter = 0  # Reset counter
-        else:
-            early_stop_counter += 1
+            # Early stopping
+            if val_loss_epoch < best_val_loss:
+                best_val_loss = val_loss_epoch
+                early_stop_counter = 0  # Reset counter
+            else:
+                early_stop_counter += 1
 
-        if early_stop_counter >= cfg.training.early_stopping_patience:
-            print("Early stopping triggered. Training stopped.")
-            break
+            if early_stop_counter >= cfg.training.early_stopping_patience:
+                print("Early stopping triggered. Training stopped.")
+                break
 
-        # Progress update
-        pbar.set_postfix_str(f'Train loss: {loss_epoch:.3e}, Val loss: {val_loss_epoch:.3e}, lr: {scheduler.get_last_lr()[0]:.3e}')
+            # Progress update
+            pbar.set_postfix_str(f'Train loss: {loss_epoch:.3e}, Val loss: {val_loss_epoch:.3e}, lr: {scheduler.get_last_lr()[0]:.3e}')
+
+    except Exception as e:
+        # Save logs in case of an error
+        with open(data_file, 'wb') as f:
+            pickle.dump(logs, f)
+        print(f"An error occurred: {e}. Logs have been saved.")
 
     mae = 0
     painn.eval()
@@ -157,7 +191,11 @@ def main(cfg):
     mae /= len(dm.data_test)
     unit_conversion = dm.unit_conversion[cfg.data.target]
     print(f'Test MAE: {unit_conversion(mae):.3f}')
-
+    logs['test_loss'].append(unit_conversion(mae))
+    
+    # Save logs to file after every epoch
+    with open(data_file, 'wb') as f:
+        pickle.dump(logs, f)
 
 if __name__ == '__main__':
     main()

@@ -11,6 +11,7 @@ experiment:
     - 10000
     - 10831
     subset_size: null
+    results_dir: /zhome/19/d/137388/github/DeepLearning_PAINN/examples
   model:
     num_message_passing_layers: 3
     num_features: 128

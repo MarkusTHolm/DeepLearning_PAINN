@@ -9,7 +9,7 @@
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
-#BSUB -W 1:00
+#BSUB -W 10:00
 # request 5GB of system-memory
 #BSUB -R "rusage[mem=5GB]"
 ##BSUB -R "span[hosts=1]"
@@ -42,12 +42,14 @@ fi
 
 date=$(date +%Y%m%d_%H%M)
 
-mkdir ${REPO}/runs/train/${date}
+results_dir=${REPO}/runs/train/${date}
+mkdir $results_dir
 
 # Activate venv
 #module load python3/3.11.9
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 ${REPO}/examples/minimal_example.py
+python3 ${REPO}/examples/WithValidation.py \
+				experiment.data.results_dir=$results_dir
 

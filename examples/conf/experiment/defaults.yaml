@@ -9,6 +9,7 @@ data:
   num_workers: 0
   splits: [110000, 10000, 10831]
   subset_size: null
+  results_dir: /zhome/19/d/137388/github/DeepLearning_PAINN/examples
 
 model:
   num_message_passing_layers: 3
