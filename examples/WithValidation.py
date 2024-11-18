@@ -75,6 +75,7 @@ def main(cfg):
                                   factor=cfg.training.decay_factor,
                                   patience=cfg.training.decay_patience)
     
+    unit_conversion = dm.unit_conversion[cfg.data.target]
     
     # File to save losses
     data_file = f"{cfg.data.results_dir}/data.pickle"
@@ -85,6 +86,8 @@ def main(cfg):
     else:
         logs = {'train_loss': [],
                 'val_loss': [],
+                'train_MAE': [],
+                'val_MAE': [],
                 'lr': [],
                 'epoch': [],
                 'test_MAE': []}  # Initialize logs
@@ -105,7 +108,8 @@ def main(cfg):
             # Training
             painn.train()
             loss_epoch = 0.
-            for i, batch in enumerate(dm.train_dataloader()):
+            MAE_epoch = 0.
+            for batch in dm.train_dataloader():
                 batch = batch.to(device)
                 atomic_contributions = painn(
                     atoms=batch.z,
@@ -123,12 +127,16 @@ def main(cfg):
                 loss.backward()
                 optimizer.step()
                 loss_epoch += loss_step.detach().item()
+                MAE_epoch += F.l1_loss(preds, batch.y, reduction='sum').detach().item()
             loss_epoch /= len(dm.data_train)
+            MAE_epoch /= len(dm.data_train)
             logs['train_loss'].append(loss_epoch)
+            logs['train_MAE'].append(unit_conversion(MAE_epoch))
                     
             # Validation
             painn.eval()
-            val_loss_epoch = 0
+            val_loss_epoch = 0.
+            val_MAE_epoch = 0.
             with torch.no_grad():
                 for val_batch in dm.val_dataloader():
                     val_batch = val_batch.to(device)
@@ -143,8 +151,11 @@ def main(cfg):
                         atomic_contributions=atomic_contributions,
                     )
                     val_loss_epoch += F.mse_loss(preds, val_batch.y, reduction='sum').detach().item()
+                    val_MAE_epoch += F.l1_loss(preds, val_batch.y, reduction='sum').detach().item()
             val_loss_epoch /= len(dm.data_val)
+            val_MAE_epoch /= len(dm.data_val)
             logs['val_loss'].append(val_loss_epoch)
+            logs['val_MAE'].append(unit_conversion(val_MAE_epoch))
             
             # Save logs to file after every epoch
             with open(data_file, 'wb') as f:
@@ -173,37 +184,38 @@ def main(cfg):
             pickle.dump(logs, f)
         print(f"An error occurred: {e}. Logs have been saved.")
 
-    mae = 0
-    painn.eval()
-    with torch.no_grad():
-        for batch in dm.test_dataloader():
-            batch = batch.to(device)
+    # Always run the below code when training is finished (due to break, error or completion)
+    finally:
+        mae = 0
+        painn.eval()
+        with torch.no_grad():
+            for batch in dm.test_dataloader():
+                batch = batch.to(device)
 
-            atomic_contributions = painn(
-                atoms=batch.z,
-                atom_positions=batch.pos,
-                graph_indexes=batch.batch,
-            )
-            preds = post_processing(
-                atoms=batch.z,
-                graph_indexes=batch.batch,
-                atomic_contributions=atomic_contributions,
-            )
-            mae += F.l1_loss(preds, batch.y, reduction='sum')
-    
-    mae /= len(dm.data_test)
-    unit_conversion = dm.unit_conversion[cfg.data.target]
-    print(f'Test MAE: {unit_conversion(mae):.3f}')
-    logs['test_MAE'].append(unit_conversion(mae))
-    
-    # Save logs
-    with open(data_file, 'wb') as f:
-        pickle.dump(logs, f)
+                atomic_contributions = painn(
+                    atoms=batch.z,
+                    atom_positions=batch.pos,
+                    graph_indexes=batch.batch,
+                )
+                preds = post_processing(
+                    atoms=batch.z,
+                    graph_indexes=batch.batch,
+                    atomic_contributions=atomic_contributions,
+                )
+                mae += F.l1_loss(preds, batch.y, reduction='sum')
         
-    # Save trained model
-    model_loader.save_checkpoint(
-        painn, optimizer, epoch, cfg.seed, model_config, f"{cfg.data.results_dir}/model_checkpoint.pth"
-    )
+        mae /= len(dm.data_test)
+        print(f'Test MAE: {unit_conversion(mae):.3f}')
+        logs['test_MAE'].append(unit_conversion(mae))
+        
+        # Save logs
+        with open(data_file, 'wb') as f:
+            pickle.dump(logs, f)
+            
+        # Save trained model
+        model_loader.save_checkpoint(
+            painn, optimizer, epoch, cfg.seed, model_config, f"{cfg.data.results_dir}/model_checkpoint.pth"
+        )
     
 
 if __name__ == '__main__':
