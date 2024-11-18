@@ -29,6 +29,7 @@ def main(cfg):
     cfg = cfg.experiment
     seed_everything(cfg.seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    logger.info(f"Running on device: {device}")
 
     dm = QM9DataModule(
         target=cfg.data.target,
