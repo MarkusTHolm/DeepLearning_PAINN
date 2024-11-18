@@ -1,2 +1,6 @@
+# hydra:
+#   run:
+#     # dir: /work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/examples #/home/mtaho/Code/Courses/DeepLearning_PAINN/examples-
+#     dir: /zhome/19/d/137388/github/DeepLearning_PAINN/examples
 defaults:
   - experiment: minimal

@@ -1,0 +1,4 @@
+Loaded module: cuda/12.4.1
+mkdir: cannot create directory ‘/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/job_out’: Permission denied
+mkdir: cannot create directory ‘/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/runs/train/20241118_1146’: Permission denied
+/zhome/19/d/137388/.lsbatch/1731926722.23198132.shell: line 49: /work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/venv/bin/activate: Permission denied
