@@ -1,4 +1,5 @@
 import torch
+from src.models import PaiNN
 
 def save_checkpoint(model, optimizer, epoch, seed, config, filepath="model_checkpoint.pth"):
     """
@@ -23,7 +24,7 @@ def save_checkpoint(model, optimizer, epoch, seed, config, filepath="model_check
     print(f"Checkpoint saved at {filepath}")
     
     
-def load_checkpoint(filepath, model, optimizer=None):
+def load_checkpoint(filepath, optimizer=None):
     """
     Loads the model, optimizer state, and metadata.
 
@@ -36,6 +37,10 @@ def load_checkpoint(filepath, model, optimizer=None):
     - dict: Metadata including epoch, seed, and config.
     """
     checkpoint = torch.load(filepath)
+    
+    # Instatiate painn model
+    model_config = checkpoint['config']
+    model = PaiNN(**model_config)
     
     # Load model state
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -51,4 +56,5 @@ def load_checkpoint(filepath, model, optimizer=None):
         'config': checkpoint['config'],
     }
     print(f"Checkpoint loaded from {filepath}")
-    return metadata
+    
+    return model, metadata
