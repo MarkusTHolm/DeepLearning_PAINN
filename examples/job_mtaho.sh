@@ -5,11 +5,11 @@
 ### -- set the job Name --
 #BSUB -J painn
 ### -- ask for number of cores (default: 1) --
-#BSUB -n 4
+#BSUB -n 1
 ### -- Select the resources: 1 gpu in exclusive process mode --
 #BSUB -gpu "num=1:mode=exclusive_process"
 ### -- set walltime limit: hh:mm --  maximum 24 hours for GPU-queues right now
-#BSUB -W 1:00
+#BSUB -W 24:00
 # request 5GB of system-memory
 #BSUB -R "rusage[mem=5GB]"
 ##BSUB -R "span[hosts=1]"
@@ -35,16 +35,19 @@ module load cuda/12.4.1
 
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
-export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
+export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 
 date=$(date +%Y%m%d_%H%M)
 
-mkdir ${REPO}/runs/train/${date}
+results_dir=${REPO}/runs/train/${date}
+mkdir $results_dir
 
 # Activate venv
 #module load python3/3.11.9
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 ${REPO}/examples/minimal_example.py hydra.verbose=true
+python3 ${REPO}/examples/WithValidation.py hydra.verbose=true
+				experiment.data.results_dir=$results_dir
+
 
