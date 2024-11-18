@@ -22,3 +22,7 @@ experiment:
     lr: 0.0005
     weight_decay: 0.01
     num_epochs: 1000
+    val_every_step: 100
+    decay_factor: 0.5
+    decay_patience: 5
+    early_stopping_patience: 30

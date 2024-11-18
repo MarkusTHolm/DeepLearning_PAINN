@@ -18,9 +18,9 @@
 # if you want to receive e-mail notifications on a non-default address
 ##BSUB -u your_email_address
 ### -- send notification at start --
-#BSUB -B
+##BSUB -B
 ### -- send notification at completion--
-#BSUB -N
+##BSUB -N
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
 #BSUB -o gpu_%J.out
@@ -33,7 +33,7 @@ module load cuda/12.4.1
 
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
-export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
+export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
 
 # Create job_out if it is not present
 if [[ ! -d ${REPO}/job_out ]]; then
