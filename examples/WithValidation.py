@@ -14,6 +14,7 @@ import torch.nn.functional as F
 from src.data import QM9DataModule
 from pytorch_lightning import seed_everything
 from src.models import PaiNN, AtomwisePostProcessing
+from src.models import model_loader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 import hydra
 import pickle
@@ -44,15 +45,17 @@ def main(cfg):
         remove_atom_refs=True, divide_by_atoms=True
     )
 
-    painn = PaiNN(
-        num_message_passing_layers=cfg.model.num_message_passing_layers,
-        num_features=cfg.model.num_features,
-        num_outputs=cfg.model.num_outputs, 
-        num_rbf_features=cfg.model.num_rbf_features,
-        num_unique_atoms=cfg.model.num_unique_atoms,
-        cutoff_dist=cfg.model.cutoff_dist,
-        device=device,
-    )
+    model_config = {'num_message_passing_layers': cfg.model.num_message_passing_layers,
+                    'num_features': cfg.model.num_features,
+                    'num_outputs': cfg.model.num_outputs, 
+                    'num_rbf_features': cfg.model.num_rbf_features,
+                    'num_unique_atoms': cfg.model.num_unique_atoms,
+                    'cutoff_dist': cfg.model.cutoff_dist,
+                    'device': device
+                    }
+    
+    painn = PaiNN(**model_config)
+    
     post_processing = AtomwisePostProcessing(
         cfg.model.num_outputs, y_mean, y_std, atom_refs
     )
@@ -84,7 +87,7 @@ def main(cfg):
                 'val_loss': [],
                 'lr': [],
                 'epoch': [],
-                'test_loss': []}  # Initialize logs
+                'test_MAE': []}  # Initialize logs
     
 
     # Initialize
@@ -191,11 +194,17 @@ def main(cfg):
     mae /= len(dm.data_test)
     unit_conversion = dm.unit_conversion[cfg.data.target]
     print(f'Test MAE: {unit_conversion(mae):.3f}')
-    logs['test_loss'].append(unit_conversion(mae))
+    logs['test_MAE'].append(unit_conversion(mae))
     
-    # Save logs to file after every epoch
+    # Save logs
     with open(data_file, 'wb') as f:
         pickle.dump(logs, f)
+        
+    # Save trained model
+    model_loader.save_checkpoint(
+        painn, optimizer, epoch, cfg.seed, model_config, f"{cfg.data.results_dir}/model_checkpoint.pth"
+    )
+    
 
 if __name__ == '__main__':
     main()
