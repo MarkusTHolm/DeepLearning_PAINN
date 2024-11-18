@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 
+import matplotlib.pyplot as plt
 import logging
 from omegaconf import DictConfig
 import hydra
@@ -100,7 +101,7 @@ class PaiNN(nn.Module):
         """
 
         # Make adjecency matrix
-        A_row, A_col = self.make_adjecency_matrix(atom_positions, graph_indexes)
+        A_row, A_col = self.make_adjecency_matrix_2(atom_positions, graph_indexes)
 
         start = time.time()
 
@@ -166,6 +167,36 @@ class PaiNN(nn.Module):
         A_col = A_col.to(device=self.device)
 
         self.logger.debug(f"Time spent in adjecency matrix: {time.time() - start})")
+
+        return A_row, A_col
+
+    def make_adjecency_matrix_2(self, atom_positions, graph_indexes):
+        """ Create adjecency matrix """
+        
+        start = time.time()
+        epsilon = 100
+
+        # Offset positions by graph-index times an epsilon to distinguish molecules
+        r = atom_positions + (graph_indexes.unsqueeze(-1))*epsilon
+
+        # Subtract all combinations of r
+        r1 = r.unsqueeze(1)
+        r2 = r.unsqueeze(0)
+        diff = r1 - r2
+
+        # Compute distance (Euclidian norm)
+        dist = torch.norm(diff, dim=2)
+
+        # Remove diagonals and obtain (full adjacency matrix)
+        dist.fill_diagonal_(epsilon)
+        A = (dist < self.cutoff_dist)._to_sparse()
+
+        # Get adjecency matrix components from sparse format
+        A_indices = A.indices()
+        A_row = A_indices[0, :]
+        A_col = A_indices[1, :]
+
+        self.logger.debug(f"Time spent in adjecency matrix 2: {time.time() - start})")
 
         return A_row, A_col
 

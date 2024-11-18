@@ -30,8 +30,6 @@ def main(cfg):
     seed_everything(cfg.seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-    torch.autograd.set_detect_anomaly(True)
-
     dm = QM9DataModule(
         target=cfg.data.target,
         data_dir=cfg.data.data_dir,
@@ -78,6 +76,8 @@ def main(cfg):
         for batch in dm.train_dataloader():
             batch = batch.to(device)
 
+            start_total = time.time()     
+
             start = time.time()
 
             atomic_contributions = painn(
@@ -106,7 +106,7 @@ def main(cfg):
 
             logger.debug(f"Time spent in Post and Loss step: {time.time() - start})")
 
-            # sys.exit()
+            logger.debug(f"Total iteration time: {time.time() - start_total})")
 
         loss_epoch /= len(dm.data_train)
         pbar.set_postfix_str(f'Train loss: {loss_epoch:.3e}')

@@ -16,7 +16,7 @@ model:
   num_outputs: 1
   num_rbf_features: 20
   num_unique_atoms: 100
-  cutoff_dist: 5.0
+  cutoff_dist: 5
 
 training:
   lr: 5e-4
