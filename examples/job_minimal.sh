@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J testjob
+#BSUB -J painn
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -12,6 +12,7 @@
 #BSUB -W 1:00
 # request 5GB of system-memory
 #BSUB -R "rusage[mem=5GB]"
+##BSUB -R "span[hosts=1]"
 ### -- set the email address --
 # please uncomment the following line and put in your e-mail address,
 # if you want to receive e-mail notifications on a non-default address
@@ -32,7 +33,7 @@ module load cuda/12.4.1
 
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
-export REPO=/work3/mtaho/PhD/DeepLearning/
+export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 
 # Create job_out if it is not present
 if [[ ! -d ${REPO}/job_out ]]; then
@@ -48,4 +49,5 @@ mkdir ${REPO}/runs/train/${date}
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 mimimal_example.py
+python3 ${REPO}/examples/minimal_example.py
+
