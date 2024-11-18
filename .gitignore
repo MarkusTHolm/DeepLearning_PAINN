@@ -14,3 +14,7 @@ data/raw/*
 *launch.json
 
 /examples/outputs/
+
+runs/
+
+.gitignore
