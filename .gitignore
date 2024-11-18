@@ -10,3 +10,7 @@ data/raw/*
 /examples/.hydra
 
 /venv/
+
+*launch.json
+
+/examples/outputs/

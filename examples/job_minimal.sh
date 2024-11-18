@@ -18,14 +18,16 @@
 # if you want to receive e-mail notifications on a non-default address
 ##BSUB -u your_email_address
 ### -- send notification at start --
-#BSUB -B
+##BSUB -B
 ### -- send notification at completion--
-#BSUB -N
+##BSUB -N
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
-#BSUB -o gpu_%J.out
-#BSUB -e gpu_%J.err
+#BSUB -o job_out/gpu_%J.out
+#BSUB -e job_out/gpu_%J.err
 # -- end of LSF options --
+
+module purge
 
 nvidia-smi
 # Load the cuda module
@@ -34,11 +36,6 @@ module load cuda/12.4.1
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
 export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
-
-# Create job_out if it is not present
-if [[ ! -d ${REPO}/job_out ]]; then
-	mkdir ${REPO}/job_out
-fi
 
 date=$(date +%Y%m%d_%H%M)
 
@@ -49,5 +46,5 @@ mkdir ${REPO}/runs/train/${date}
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 ${REPO}/examples/minimal_example.py
+python3 ${REPO}/examples/minimal_example.py hydra.verbose=true
 

@@ -110,6 +110,7 @@ hydra:
   output_subdir: .hydra
   overrides:
     hydra:
+    - hydra.verbose=true
     - hydra.mode=RUN
     task: []
   job:
@@ -152,4 +153,4 @@ hydra:
       hydra/sweeper: basic
       hydra/launcher: basic
       hydra/output: default
-  verbose: false
+  verbose: true

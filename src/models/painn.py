@@ -6,6 +6,7 @@ import logging
 from omegaconf import DictConfig
 import hydra
 import time
+from torch_geometric.nn import radius_graph
 
 class PaiNN(nn.Module):
     """

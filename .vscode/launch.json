@@ -8,7 +8,7 @@
             "name": "Python Debugger: Current File with Arguments",
             "type": "debugpy",
             "request": "launch",
-            "program": "/home/mtaho/Code/Courses/DeepLearning_PAINN/examples/minimal_example.py",
+            "program": "/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/examples/minimal_example.py",
             "console": "integratedTerminal",
         }
     ]
