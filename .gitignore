@@ -21,3 +21,5 @@ res/
 
 .gitignore
 
+/examples/job_out
+

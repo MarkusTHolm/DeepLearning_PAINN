@@ -37,17 +37,16 @@ module load cuda/12.4.1
 
 export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 
+# Create a new directory for the results
 date=$(date +%Y%m%d_%H%M)
-
 results_dir=${REPO}/runs/train/${date}
 mkdir $results_dir
 
 # Activate venv
-#module load python3/3.11.9
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 ${REPO}/examples/WithValidation.py hydra.verbose=true
+python3 ${REPO}/examples/WithValidation.py \
 				experiment.data.results_dir=$results_dir
 
 
