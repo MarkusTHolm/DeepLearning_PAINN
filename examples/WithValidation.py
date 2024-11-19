@@ -130,7 +130,7 @@ def main(cfg):
                 MAE_epoch += F.l1_loss(preds, batch.y, reduction='sum').detach().item()
             loss_epoch /= len(dm.data_train)
             MAE_epoch /= len(dm.data_train)
-            logs['train_loss'].append(loss_epoch)
+            logs['train_loss'].append(loss_epoch.detach().item())
             logs['train_MAE'].append(unit_conversion(MAE_epoch))
                     
             # Validation
