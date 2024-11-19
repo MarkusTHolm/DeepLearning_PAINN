@@ -1,7 +1,7 @@
 import torch
 from src.models import PaiNN
 
-def save_checkpoint(model, optimizer, epoch, seed, config, filepath="model_checkpoint.pth"):
+def save_checkpoint(model, optimizer, epoch, seed, target, config, filepath="model_checkpoint.pth"):
     """
     Saves the model, optimizer state, and metadata.
 
@@ -18,6 +18,7 @@ def save_checkpoint(model, optimizer, epoch, seed, config, filepath="model_check
         'optimizer_state_dict': optimizer.state_dict(),
         'epoch': epoch,
         'seed': seed,
+        'target': target,
         'config': config,
     }
     torch.save(checkpoint, filepath)
@@ -53,6 +54,7 @@ def load_checkpoint(filepath, optimizer=None):
     metadata = {
         'epoch': checkpoint['epoch'],
         'seed': checkpoint['seed'],
+        'target': checkpoint['target'],
         'config': checkpoint['config'],
     }
     print(f"Checkpoint loaded from {filepath}")

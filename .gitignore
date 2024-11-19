@@ -17,6 +17,8 @@ data/raw/*
 
 runs/
 
+res/
+
 .gitignore
 
 /examples/job_out
