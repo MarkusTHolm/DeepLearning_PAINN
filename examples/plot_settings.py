@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 
 def define_plot_settings(font_size = 20):
         font = {'family' : 'serif', #'Times New Roman', #'sans-serif',
-                'serif'  : 'Times New Roman',# 'sans-serif': ['Helvetica'],
+                # 'serif'  : 'Times New Roman',# 'sans-serif': ['Helvetica'],
                 # 'serif'  : 'DejaVu Serif',# 'sans-serif': ['Helvetica'],
                 'size'   : font_size}
         matplotlib.rc('font', **font)
         matplotlib.rc('mathtext', **{'fontset': 'dejavuserif'})
-        SMALL_SIZE =  font_size - 2
+        SMALL_SIZE =  font_size # - 2
         MEDIUM_SIZE = font_size
-        BIGGER_SIZE = font_size + 2
+        BIGGER_SIZE = font_size #+ 2
         plt.rc('font', size=SMALL_SIZE)          # Controls default text sizes
         plt.rc('axes', titlesize=MEDIUM_SIZE)     # Font size of the axes title
         plt.rc('axes', labelsize=MEDIUM_SIZE)    # Font size of the x and y labels

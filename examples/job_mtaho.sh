@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J painn
+#BSUB -J painn[1-2]
 ### -- ask for number of cores (default: 1) --
 #BSUB -n 1
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -23,8 +23,8 @@
 ##BSUB -N
 ### -- Specify the output and error file. %J is the job-id --
 ### -- -o and -e mean append, -oo and -eo mean overwrite --
-#BSUB -o job_out/gpu_%J.out
-#BSUB -e job_out/gpu_%J.err
+#BSUB -o job_out/gpu_%J_%I.out
+#BSUB -e job_out/gpu_%J_%I.err
 # -- end of LSF options --
 
 module purge
@@ -37,9 +37,13 @@ module load cuda/12.4.1
 
 export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 
+ARRAY1=(7 5)
+target=${ARRAY1[${LSB_JOBINDEX}-1]}
+echo "target: $target"
+
 # Create a new directory for the results
 date=$(date +%Y%m%d_%H%M)
-results_dir=${REPO}/runs/train/${date}
+results_dir=${REPO}/runs/train/${date}"_"${LSB_JOBINDEX}
 mkdir $results_dir
 
 # Activate venv
@@ -47,6 +51,7 @@ source ${REPO}/venv/bin/activate
 
 # run training
 python3 ${REPO}/examples/WithValidation.py \
-				experiment.data.results_dir=$results_dir
+				experiment.data.results_dir=$results_dir \
+				experiment.data.target=$target
 
 
