@@ -206,7 +206,7 @@ def main(cfg):
         
         mae /= len(dm.data_test)
         print(f'Test MAE: {unit_conversion(mae):.3f}')
-        logs['test_MAE'].append(unit_conversion(mae))
+        logs['test_MAE'].append(unit_conversion(mae).detach().item())
         
         # Save logs
         with open(data_file, 'wb') as f:
@@ -214,7 +214,7 @@ def main(cfg):
             
         # Save trained model
         model_loader.save_checkpoint(
-            painn, optimizer, epoch, cfg.seed, model_config, f"{cfg.data.results_dir}/model_checkpoint.pth"
+            painn, optimizer, epoch, cfg.seed, cfg.data.target,  model_config, f"{cfg.data.results_dir}/model_checkpoint.pth"
         )
     
 
