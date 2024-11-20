@@ -50,6 +50,6 @@ mkdir $results_dir
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 ${REPO}/examples/WithValidation.py \
+python3 ${REPO}/examples/with_validation.py \
 				experiment.data.results_dir=$results_dir
 
