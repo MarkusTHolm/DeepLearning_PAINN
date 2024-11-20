@@ -1,0 +1,5 @@
+defaults:
+  - defaults
+
+training:
+    num_epochs: 1

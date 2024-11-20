@@ -202,6 +202,7 @@ class PaiNN(nn.Module):
         return A_row, A_col
 
 class Message(nn.Module):   
+    """ Message class for PaiNN """
     def __init__(self,
                 num_features, 
                 num_rbf_features,
@@ -270,6 +271,7 @@ class Message(nn.Module):
         return fc.unsqueeze(1)*rbf_output
     
 class Update(nn.Module):   
+    """ Update class for PaiNN """
     def __init__(self,
                 num_features, 
                 num_rbf_features,
