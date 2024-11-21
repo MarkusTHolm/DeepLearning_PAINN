@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J painn[1-1]
+#BSUB -J painn[1-9]
 ### -- ask for number of CPU cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -38,21 +38,24 @@ module load cuda/12.4.1
 
 export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 
-ARRAY1=(7 3)
+ARRAY1=(2 3 4 6 7 8 9 10 11)
 target=${ARRAY1[${LSB_JOBINDEX}-1]}
 echo "target: $target"
 
 # Create a new directory for the results
-date=$(date +%Y%m%d_%H%M)
+date=$(date +%Y-%m-%d/%H-%M)
 results_dir=${REPO}/runs/train/${date}"_"${LSB_JOBINDEX}
-mkdir $results_dir
+echo "results_dir: $results_dir"
+mkdir -p $results_dir
 
 # Activate venv
 source ${REPO}/venv/bin/activate
 
 # run training
 python3 ${REPO}/examples/with_validation.py \
+				hydra.output_subdir=$results_dir \
 				experiment.data.results_dir=$results_dir \
 				experiment.data.target=$target
+				
 
 

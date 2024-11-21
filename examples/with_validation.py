@@ -34,6 +34,8 @@ def main(cfg):
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
     logger.info(f"Using device: {device}")
 
+    print(f"Working directory  : {os.getcwd()}")
+
     dm = QM9DataModule(
         target=cfg.data.target,
         data_dir=cfg.data.data_dir,
