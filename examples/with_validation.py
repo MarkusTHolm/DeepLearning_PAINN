@@ -20,6 +20,10 @@ import hydra
 import pickle
 import os
 
+import logging
+from omegaconf import DictConfig
+
+logger = logging.getLogger(__name__)
 
 @hydra.main(config_path=f'./conf',
             config_name='config.yaml',
@@ -28,6 +32,9 @@ def main(cfg):
     cfg = cfg.experiment
     seed_everything(cfg.seed)
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    logger.info(f"Using device: {device}")
+
+    print(f"Working directory  : {os.getcwd()}")
 
     dm = QM9DataModule(
         target=cfg.data.target,
@@ -130,10 +137,10 @@ def main(cfg):
                 MAE_epoch += F.l1_loss(preds, batch.y, reduction='sum').detach().item()
             loss_epoch /= len(dm.data_train)
             MAE_epoch /= len(dm.data_train)
-            logs['train_loss'].append(loss_epoch.detach().item())
+            logs['train_loss'].append(loss_epoch)
             logs['train_MAE'].append(unit_conversion(MAE_epoch))
                     
-            # Validation
+            # Validation (on every epoch)
             painn.eval()
             val_loss_epoch = 0.
             val_MAE_epoch = 0.
@@ -217,6 +224,5 @@ def main(cfg):
             painn, optimizer, epoch, cfg.seed, cfg.data.target,  model_config, f"{cfg.data.results_dir}/model_checkpoint.pth"
         )
     
-
 if __name__ == '__main__':
     main()

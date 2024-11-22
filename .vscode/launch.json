@@ -9,7 +9,8 @@
             "type": "debugpy",
             "request": "launch",
             // "program": "/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/examples/minimal_example.py",
-            "program": "/home/mtaho/Code/Courses/DeepLearning_PAINN/examples/minimal_example.py",
+            // "program": "/home/mtaho/Code/Courses/DeepLearning_PAINN/examples/with_validation.py",
+            "program": "/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN/examples/with_validation.py",
             "console": "integratedTerminal",
         }
     ]

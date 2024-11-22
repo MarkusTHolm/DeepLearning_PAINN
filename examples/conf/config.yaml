@@ -1,2 +1,7 @@
+
+hydra:
+  job:
+    chdir: False
+
 defaults:
   - experiment: minimal
