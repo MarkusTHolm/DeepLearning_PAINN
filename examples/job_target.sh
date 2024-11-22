@@ -43,8 +43,8 @@ target=${ARRAY1[${LSB_JOBINDEX}-1]}
 echo "target: $target"
 
 # Create a new directory for the results
-date=$(date +%Y-%m-%d/%H-%M)
-results_dir=${REPO}/runs/train/${date}"_"${LSB_JOBINDEX}
+date=$(date +%Y-%m-%d)
+results_dir=${REPO}/runs/train/${date}/target_$target"_id_"$LSB_JOBINDEX
 echo "results_dir: $results_dir"
 mkdir -p $results_dir
 
