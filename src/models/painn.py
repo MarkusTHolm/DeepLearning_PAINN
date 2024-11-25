@@ -21,7 +21,7 @@ class PaiNN(nn.Module):
         num_rbf_features: int = 20,
         num_unique_atoms: int = 100,
         cutoff_dist: float = 5.0,
-        device = None,
+        device=torch.device("cuda" if torch.cuda.is_available() else "cpu"),
     ) -> None:
         """
         Args:
@@ -71,7 +71,7 @@ class PaiNN(nn.Module):
         self.final_reduction = nn.Sequential(
             nn.Linear(self.num_features, self.num_features//2, bias=True),
             nn.SiLU(),
-            nn.Linear(self.num_features//2, 1, bias=True)
+            nn.Linear(self.num_features//2, self.num_outputs, bias=True)
         )
 
     def forward(
@@ -125,9 +125,11 @@ class PaiNN(nn.Module):
 
         # Perform message passing
         for i in range(self.num_message_passing_layers):
-            delta_vi, delta_si = self.message_layers[i](v_j, s_j, r_ij, N_i, A_row) #TODO: Could insert N_i and A_row into message in another way
+            # Message step
+            delta_vi, delta_si = self.message_layers[i](v_j, s_j, r_ij, N_i, A_row)
             v_i = v_i + delta_vi
             s_i = s_i + delta_si
+            # Update step
             delta_vi, delta_si = self.update_layers[i](v_i, s_i, N_i)
             v_i = v_i + delta_vi
             s_i = s_i + delta_si
@@ -260,8 +262,7 @@ class Message(nn.Module):
         return delta_vim, delta_sim
     
     def radial_basis_functions(self, r_ij_norm):
-        Nrbf = 20
-        ns = torch.arange(1, Nrbf+1, device=self.device).unsqueeze(0)
+        ns = torch.arange(1, self.num_rbf_features+1, device=self.device).unsqueeze(0)
         r_ij_unsqueeze = r_ij_norm.unsqueeze(1)
         rbf_output = torch.sin(ns*torch.pi/self.cutoff_dist*r_ij_unsqueeze)/r_ij_unsqueeze        
         return rbf_output
