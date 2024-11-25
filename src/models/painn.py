@@ -74,6 +74,19 @@ class PaiNN(nn.Module):
             nn.Linear(self.num_features//2, self.num_outputs, bias=True)
         )
 
+        # Initialize weights using Xavier uniform
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.embedding.weight)
+        for layer in self.message_layers:
+            layer.reset_parameters()
+        for layer in self.update_layers:
+            layer.reset_parameters()
+        for layer in self.final_reduction:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+
     def forward(
         self,
         atoms: torch.LongTensor,
@@ -113,12 +126,10 @@ class PaiNN(nn.Module):
         # Find relative positions
         r_ij = atom_positions[A_col] - atom_positions[A_row]
 
-        # Get Z and embeddings
+        # Get s_i and s_j from embeddings
         Z_i = atoms
-        Z_j = atoms[A_col]
-
         s_i = self.embedding(Z_i)
-        s_j = self.embedding(Z_j)
+        s_j = s_i[A_col]
 
         v_i = torch.zeros((N_i, 3, self.num_features), device=self.device)
         v_j = torch.zeros((N_j, 3, self.num_features), device=self.device)
@@ -223,7 +234,13 @@ class Message(nn.Module):
             nn.Linear(self.num_features, self.num_features*3, bias=True)
         )
 
-        self.rbf_linear = nn.Linear(self.num_rbf_features, self.num_features*3)
+        self.rbf_linear = nn.Linear(self.num_rbf_features, self.num_features*3, bias=True)
+
+    def reset_parameters(self):
+        for layer in self.sj_linear:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+        nn.init.xavier_uniform_(self.rbf_linear.weight)
 
     def forward(self, v_j, s_j, r_ij, N_i, A_row):
 
@@ -263,14 +280,14 @@ class Message(nn.Module):
     
     def radial_basis_functions(self, r_ij_norm):
         ns = torch.arange(1, self.num_rbf_features+1, device=self.device).unsqueeze(0)
-        r_ij_unsqueeze = r_ij_norm.unsqueeze(1)
-        rbf_output = torch.sin(ns*torch.pi/self.cutoff_dist*r_ij_unsqueeze)/r_ij_unsqueeze        
+        r_ij_norm_unsqueeze = r_ij_norm.unsqueeze(1)
+        rbf_output = torch.sin(ns*torch.pi/self.cutoff_dist*r_ij_norm_unsqueeze)/r_ij_norm_unsqueeze        
         return rbf_output
 
     def cosine_cutoff(self, rbf_output, r_ij_norm):
         fc = 0.5*(torch.cos(torch.pi*r_ij_norm/self.cutoff_dist) + 1)
         return fc.unsqueeze(1)*rbf_output
-    
+
 class Update(nn.Module):   
     """ Update class for PaiNN """
     def __init__(self,
@@ -293,24 +310,32 @@ class Update(nn.Module):
             nn.Linear(self.num_features, self.num_features*3, bias=True)
         )
 
-    def forward(self, v_i, s_i, N_i):
+    def reset_parameters(self):
+        nn.init.xavier_uniform_(self.linear_nobias_U.weight)
+        nn.init.xavier_uniform_(self.linear_nobias_V.weight)
+        for layer in self.sj_linear:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
 
-        tmp_U_vi = self.linear_nobias_U(v_i)
-        tmp_V_vi = self.linear_nobias_V(v_i)
+    def forward(self, v_j, s_j, N_i):
 
-        s_i_stack = torch.empty((N_i, self.num_features*2), device=self.device)
-        s_i_stack[:, 0:self.num_features] = s_i
-        s_i_stack[:, self.num_features:self.num_features*2] = torch.norm(tmp_V_vi, dim=1)
+        tmp_U_vj = self.linear_nobias_U(v_j)
+        tmp_V_vj = self.linear_nobias_V(v_j)
 
-        a = self.sj_linear(s_i_stack)
+        s_j_stack = torch.empty((N_i, self.num_features*2), device=self.device)
+        s_j_stack[:, 0:self.num_features] = s_j
+        s_j_stack[:, self.num_features:self.num_features*2] = torch.norm(tmp_V_vj, dim=1)
+
+        a = self.sj_linear(s_j_stack)
 
         a_vv = a[:, 0:self.num_features]
         a_sv = a[:, self.num_features:self.num_features*2]
         a_ss = a[:, self.num_features*2:self.num_features*3]
 
-        tmp_scalar_prod = torch.sum(tmp_U_vi*tmp_V_vi, dim=1)
+        tmp_scalar_prod = torch.sum(tmp_U_vj*tmp_V_vj, dim=1)
 
-        delta_viu = tmp_U_vi*a_vv.unsqueeze(1)
+        delta_viu = tmp_U_vj*a_vv.unsqueeze(1)
         delta_siu = tmp_scalar_prod*a_sv + a_ss
 
-        return delta_viu, delta_siu
+        return delta_viu, delta_siu    
+    
