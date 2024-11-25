@@ -36,7 +36,8 @@ module load cuda/12.4.1
 
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
-export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
+##export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
+export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
 
 ARRAY1=(2 3 4 6 7 8 9 10 11)
 target=${ARRAY1[${LSB_JOBINDEX}-1]}
@@ -55,7 +56,7 @@ source ${REPO}/venv/bin/activate
 python3 ${REPO}/examples/with_validation.py \
 				hydra.output_subdir=$results_dir \
 				experiment.data.results_dir=$results_dir \
-				experiment.data.target=$target
-				
+				experiment.data.target=$target \
+				experiment.seed=$23
 
 
