@@ -36,8 +36,10 @@ module load cuda/12.4.1
 
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
-##export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
-export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
+export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
+# export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
+
+seed=10
 
 ##ARRAY1=(2 3 4 6 7 8 9 10 11)
 ARRAY1=(6 7 8 9 10)
@@ -46,7 +48,7 @@ echo "target: $target"
 
 # Create a new directory for the results
 date=$(date +%Y-%m-%d)
-results_dir=${REPO}/runs/train/${date}/target_$target"_id_"$LSB_JOBINDEX
+results_dir=${REPO}/runs/train/${date}/seed_$seed"_target_"$target"_id_"$LSB_JOBINDEX
 echo "results_dir: $results_dir"
 mkdir -p $results_dir
 
