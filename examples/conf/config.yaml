@@ -4,4 +4,4 @@ hydra:
     chdir: False
 
 defaults:
-  - experiment: minimal
+  - experiment: sam

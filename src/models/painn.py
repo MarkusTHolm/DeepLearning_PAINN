@@ -73,6 +73,7 @@ class PaiNN(nn.Module):
             nn.SiLU(),
             nn.Linear(self.num_features//2, self.num_outputs, bias=True)
         )
+        #NOTE maybe try with other reduction of size of final layers
 
     def forward(
         self,
@@ -261,11 +262,12 @@ class Message(nn.Module):
     
     def radial_basis_functions(self, r_ij_norm):
         ns = torch.arange(1, self.num_rbf_features+1, device=self.device).unsqueeze(0)
-        r_ij_unsqueeze = r_ij_norm.unsqueeze(1)
-        rbf_output = torch.sin(ns*torch.pi/self.cutoff_dist*r_ij_unsqueeze)/r_ij_unsqueeze        
+        r_ij_norm_unsqueeze = r_ij_norm.unsqueeze(1)
+        rbf_output = torch.sin(ns*torch.pi/self.cutoff_dist*r_ij_norm_unsqueeze)/r_ij_norm_unsqueeze        
         return rbf_output
 
     def cosine_cutoff(self, rbf_output, r_ij_norm):
+        # NOTE that we only include r_ij <= r_cutoff. Hence we dont need to handle the case where r_ij > r_cutoff
         fc = 0.5*(torch.cos(torch.pi*r_ij_norm/self.cutoff_dist) + 1)
         return fc.unsqueeze(1)*rbf_output
     

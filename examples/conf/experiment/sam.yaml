@@ -1,0 +1,6 @@
+defaults:
+  - defaults
+
+training:
+  rho: 0.05
+  sam_adaptive: False
