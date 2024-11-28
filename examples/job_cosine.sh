@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J painn[1-4]
+#BSUB -J painn_cosine[1-5]
 ### -- ask for number of CPU cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -42,13 +42,14 @@ export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 seed=10
 
 ##ARRAY1=(2 3 4 6 7 8 9 10 11)
-ARRAY1=(6 7 8 9)
-target=${ARRAY1[${LSB_JOBINDEX}-1]}
+ARRAY1=(200 400 600 800 1000)
+tMax=${ARRAY1[${LSB_JOBINDEX}-1]}
+target=7 
 echo "target: $target"
 
 # Create a new directory for the results
 date=$(date +%Y-%m-%d)
-results_dir=${REPO}/runs/train/${date}/seed_$seed"_target_"$target"_id_"$LSB_JOBINDEX
+results_dir=${REPO}/runs/train/${date}/seed_$seed"_target_"$target"_tMax_"$tMax"_id_"$LSB_JOBINDEX
 echo "results_dir: $results_dir"
 mkdir -p $results_dir
 
@@ -56,10 +57,11 @@ mkdir -p $results_dir
 source ${REPO}/venv/bin/activate
 
 # run training
-python3 ${REPO}/examples/train_with_exp_smooth.py \
+python3 ${REPO}/examples/cosine_annealing.py \
 				hydra.output_subdir=$results_dir \
 				experiment.data.results_dir=$results_dir \
 				experiment.data.target=$target \
-				experiment.seed=$seed
+				experiment.seed=$seed \
+				experiment.training.cosine_annealing_tMax=$tMax
 
 

@@ -29,3 +29,4 @@ training:
   decay_patience: 5
   early_stopping_patience: 30
   alpha: 0.9
+  cosine_annealing_tMax: 500
