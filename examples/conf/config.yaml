@@ -1,7 +1,7 @@
-
 hydra:
   job:
     chdir: False
 
 defaults:
-  - experiment: sam
+  - _self_
+  - experiment: minimal
