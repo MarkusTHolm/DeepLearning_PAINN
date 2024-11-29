@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J painn[1-3]
+#BSUB -J painn[1-7]
 ### -- ask for number of CPU cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -39,7 +39,7 @@ module load cuda/12.4.1
 ##export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
 
-ARRAY1=(0.0001 0.001 0.01)
+ARRAY1=(0.1 0.5 1 1.5 2 2.5 3)
 rho=${ARRAY1[${LSB_JOBINDEX}-1]}
 seed=23
 target=7
@@ -60,7 +60,8 @@ python3 ${REPO}/examples/train_SAM.py \
 				experiment.data.results_dir=$results_dir \
 				experiment.data.target=$target \
 				experiment.training.rho=$rho \
-				experiment.training.sam_adaptive=False \
-				experiment.seed=$seed
+				experiment.training.sam_adaptive=True \
+				experiment.seed=$seed\
+				experiment.training.decay_factor=0.2
 
 
