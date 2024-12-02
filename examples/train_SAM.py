@@ -16,6 +16,7 @@ from pytorch_lightning import seed_everything
 from src.models import PaiNN, AtomwisePostProcessing
 from src.models import model_loader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import CosineAnnealingLR
 import hydra
 import pickle
 import os
@@ -84,10 +85,14 @@ def main(cfg):
     )
     
     # Scheduler for learning rate decay
-    scheduler = ReduceLROnPlateau(optimizer,
-                                  mode='min',
-                                  factor=cfg.training.decay_factor,
-                                  patience=cfg.training.decay_patience)
+    scheduler = CosineAnnealingLR(optimizer,
+                                  T_max=cfg.training.cosine_annealing_tMax)
+    
+    # # Scheduler for learning rate decay
+    # scheduler = ReduceLROnPlateau(optimizer,
+    #                               mode='min',
+    #                               factor=cfg.training.decay_factor,
+    #                               patience=cfg.training.decay_patience)
     
     unit_conversion = dm.unit_conversion[cfg.data.target]
     
@@ -210,18 +215,19 @@ def main(cfg):
                 pickle.dump(logs, f)
 
             # Update learning rate scheduler
-            scheduler.step(smoothed_val_loss)
+            #scheduler.step(smoothed_val_loss)
+            scheduler.step()
 
-            # Early stopping
-            if smoothed_val_loss < best_val_loss:
-                best_val_loss = smoothed_val_loss
-                early_stop_counter = 0  # Reset counter
-            else:
-                early_stop_counter += 1
+            # # Early stopping
+            # if smoothed_val_loss < best_val_loss:
+            #     best_val_loss = smoothed_val_loss
+            #     early_stop_counter = 0  # Reset counter
+            # else:
+            #     early_stop_counter += 1
 
-            if early_stop_counter >= cfg.training.early_stopping_patience:
-                print("Early stopping triggered. Training stopped.")
-                break
+            # if early_stop_counter >= cfg.training.early_stopping_patience:
+            #     print("Early stopping triggered. Training stopped.")
+            #     break
 
             # Progress update
             pbar.set_postfix_str(f'Train loss: {loss_epoch:.3e}, Val loss: {smoothed_val_loss:.3e}, lr: {scheduler.get_last_lr()[0]:.3e}')

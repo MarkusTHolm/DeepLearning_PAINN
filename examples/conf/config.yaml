@@ -4,4 +4,4 @@ hydra:
 
 defaults:
   - _self_
-  - experiment: minimal
+  - experiment: sam

@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J painn[1-7]
+#BSUB -J painn[1-5]
 ### -- ask for number of CPU cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -39,16 +39,17 @@ module load cuda/12.4.1
 ##export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
 export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
 
-ARRAY1=(0.000001 0.000005 0.00001 0.00005 0.0001 0.0005 0.001)
-rho=${ARRAY1[${LSB_JOBINDEX}-1]}
+ARRAY1=(10 50 100 500 1000)
+batchsize=${ARRAY1[${LSB_JOBINDEX}-1]}
+rho=0.001
 tMax=800
-seed=23
+seed=40
 target=7
 echo "target: $target"
 
 # Create a new directory for the results
 date=$(date +%Y-%m-%d)
-results_dir=${REPO}/runs/train/${date}/seed_$seed"_target_"$target"_rho_"$rho"_id_"$LSB_JOBINDEX
+results_dir=${REPO}/runs/train/${date}/seed_$seed"_target_"$target"_rho_"$rho"_id_"$LSB_JOBINDEX"_batchsize_"$batchsize
 echo "results_dir: $results_dir"
 mkdir -p $results_dir
 
@@ -61,9 +62,10 @@ python3 ${REPO}/examples/train_SAM.py \
 				experiment.data.results_dir=$results_dir \
 				experiment.data.target=$target \
 				experiment.training.rho=$rho \
-				experiment.training.sam_adaptive=False \
+				experiment.training.sam_adaptive=True \
 				experiment.seed=$seed \
-				experiment.training.cosine_annealing_tMax=$tMax
+				experiment.training.cosine_annealing_tMax=$tMax \
+				experiment.data.batch_size_train=$batchsize
 
 
 
