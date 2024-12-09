@@ -41,7 +41,7 @@ export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
 
 ARRAY1=(10 50 100 500 1000)
 batchsize=${ARRAY1[${LSB_JOBINDEX}-1]}
-rho=0.001
+rho=0.00005
 tMax=800
 seed=40
 target=7

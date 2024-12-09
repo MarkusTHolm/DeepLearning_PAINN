@@ -168,7 +168,7 @@ def main(cfg):
             if smoothed_val_loss is None:
                 smoothed_val_loss = val_loss_epoch
             else:
-                smoothed_val_loss = cfg.training.alpha * val_loss_epoch + (1 - cfg.training.alpha) * smoothed_val_loss
+                smoothed_val_loss = cfg.training.alpha * smoothed_val_loss + (1 - cfg.training.alpha) * val_loss_epoch
             
             # Save logs
             logs['val_loss'].append(val_loss_epoch)

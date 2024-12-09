@@ -3,7 +3,7 @@
 ### –- specify queue --
 #BSUB -q gpuv100
 ### -- set the job Name --
-#BSUB -J painn[1-4]
+#BSUB -J painn[1-5]
 ### -- ask for number of CPU cores (default: 1) --
 #BSUB -n 4
 ### -- Select the resources: 1 gpu in exclusive process mode --
@@ -36,13 +36,13 @@ module load cuda/12.4.1
 
 /appl/cuda/12.4.1/samples/bin/x86_64/linux/release/deviceQuery
 
-export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
-# export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
+# export REPO=/work3/mtaho/PhD/DeepLearning/DeepLearning_PAINN
+export REPO=/zhome/19/d/137388/github/DeepLearning_PAINN
 
-seed=10
+seed=13
 
 ##ARRAY1=(2 3 4 6 7 8 9 10 11)
-ARRAY1=(6 7 8 9)
+ARRAY1=(6 7 8 9 10)
 target=${ARRAY1[${LSB_JOBINDEX}-1]}
 echo "target: $target"
 
