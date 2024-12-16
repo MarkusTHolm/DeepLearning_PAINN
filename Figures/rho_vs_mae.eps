@@ -2,10 +2,10 @@
 %%LanguageLevel: 3
 %%Title: rho_vs_mae.eps
 %%Creator: Matplotlib v3.9.2, https://matplotlib.org/
-%%CreationDate: Mon Dec 16 10:39:55 2024
+%%CreationDate: Mon Dec 16 10:43:47 2024
 %%Orientation: portrait
-%%BoundingBox: 0 0 399 171
-%%HiResBoundingBox: 0.000000 0.000000 398.875000 170.600313
+%%BoundingBox: 0 0 416 171
+%%HiResBoundingBox: 0.000000 0.000000 415.453125 170.600313
 %%EndComments
 %%BeginProlog
 /mpldict 10 dict def
@@ -26,8 +26,8 @@ mpldict begin
 /FontMatrix [0.00048828125 0 0 0.00048828125 0 0] def
 /FontBBox [-1576 -710 4312 2272] def
 /FontType 3 def
-/Encoding [/minus /space /zero /one /three /four /five /six /seven /eight /nine /A /E /M /N /P /S /bracketleft /bracketright /a /b /d /e /g /h /i /o /r /s /z] def
-/CharStrings 31 dict dup begin
+/Encoding [/minus /space /parenleft /parenright /zero /one /three /four /five /six /seven /eight /nine /A /D /E /M /N /P /S /bracketleft /bracketright /a /b /c /d /e /g /h /i /o /r /s /z] def
+/CharStrings 35 dict dup begin
 /.notdef 0 def
 /minus{1716 0 217 561 1499 723 sc
 217 723 m
@@ -38,6 +38,34 @@ mpldict begin
 
 ce} _d
 /space{651 0 0 0 0 0 sc
+ce} _d
+/parenleft{799 0 162 -319 653 1556 sc
+653 -319 m
+491 -246 369 -131 286 26 c
+203 184 162 381 162 618 c
+162 855 203 1053 286 1210 c
+369 1368 491 1483 653 1556 c
+653 1458 l
+550 1387 477 1288 432 1159 c
+387 1031 365 851 365 618 c
+365 386 387 206 432 77 c
+477 -51 550 -150 653 -221 c
+653 -319 l
+
+ce} _d
+/parenright{799 0 145 -319 637 1556 sc
+145 -319 m
+145 -221 l
+248 -150 321 -51 366 77 c
+411 206 434 386 434 618 c
+434 851 411 1031 366 1159 c
+321 1288 248 1387 145 1458 c
+145 1556 l
+308 1483 430 1368 513 1210 c
+596 1053 637 855 637 618 c
+637 381 596 184 513 26 c
+430 -131 308 -246 145 -319 c
+
 ce} _d
 /zero{1303 0 135 -29 1167 1520 sc
 651 70 m
@@ -305,6 +333,30 @@ ce} _d
 -12 0 l
 
 ce} _d
+/D{1642 0 113 0 1524 1493 sc
+506 106 m
+692 106 l
+886 106 1035 161 1138 272 c
+1242 383 1294 541 1294 748 c
+1294 955 1242 1113 1139 1222 c
+1036 1331 887 1386 692 1386 c
+506 1386 l
+506 106 l
+
+113 0 m
+113 106 l
+303 106 l
+303 1386 l
+113 1386 l
+113 1493 l
+707 1493 l
+964 1493 1165 1427 1308 1296 c
+1452 1165 1524 982 1524 748 c
+1524 513 1452 330 1308 198 c
+1164 66 964 0 707 0 c
+113 0 l
+
+ce} _d
 /E{1495 0 113 0 1331 1493 sc
 113 0 m
 113 106 l
@@ -539,6 +591,29 @@ ce} _d
 614 977 542 943 493 876 c
 444 809 420 711 420 584 c
 420 479 l
+
+ce} _d
+/c{1147 0 102 -29 1053 1092 sc
+1053 319 m
+1027 206 977 119 903 60 c
+829 1 733 -29 616 -29 c
+461 -29 337 22 243 124 c
+149 227 102 363 102 532 c
+102 702 149 838 243 939 c
+337 1041 461 1092 616 1092 c
+683 1092 750 1084 817 1068 c
+884 1053 951 1029 1018 997 c
+1018 725 l
+911 725 l
+897 818 866 886 819 929 c
+772 972 705 993 618 993 c
+519 993 444 954 393 877 c
+342 800 317 685 317 532 c
+317 379 342 263 392 186 c
+443 109 518 70 618 70 c
+697 70 761 91 808 132 c
+855 173 888 236 905 319 c
+1053 319 l
 
 ce} _d
 /d{1311 0 102 -29 1251 1556 sc
@@ -865,11 +940,11 @@ end
 %%EndProlog
 mpldict begin
 0 0 translate
-0 0 398.875 170.6 rectclip
+0 0 415.453 170.6 rectclip
 gsave
 0 0 m
-398.875 0 l
-398.875 170.600313 l
+415.453125 0 l
+415.453125 170.600313 l
 0 170.600313 l
 cl
 1 setgray
@@ -2216,17 +2291,25 @@ grestore
 2 setlinewidth
 1 setlinejoin
 [2 3.3] 0 setdash
-0 setgray
+0 0 1 setrgbcolor
 gsave
 40.653 47.2 223.2 110.88 rectclip
 40.653125 51.871325 m
 263.853125 51.871325 l
 stroke
 grestore
+0 0.502 0 setrgbcolor
+gsave
+40.653 47.2 223.2 110.88 rectclip
+40.653125 88.285728 m
+263.853125 88.285728 l
+stroke
+grestore
 0.8 setlinewidth
 0 setlinejoin
 2 setlinecap
 [] 0 setdash
+0 setgray
 gsave
 40.653125 47.2 m
 40.653125 158.08 l
@@ -2251,15 +2334,15 @@ grestore
 0 setlinecap
 0.8 setgray
 gsave
-273.653125 69.719688 m
-388.875 69.719688 l
-390.741667 69.719688 391.675 70.653021 391.675 72.519688 c
-391.675 132.760312 l
-391.675 134.626979 390.741667 135.560313 388.875 135.560313 c
-273.653125 135.560313 l
-271.786458 135.560313 270.853125 134.626979 270.853125 132.760312 c
-270.853125 72.519688 l
-270.853125 70.653021 271.786458 69.719688 273.653125 69.719688 c
+273.653125 59.219688 m
+405.453125 59.219688 l
+407.319792 59.219688 408.253125 60.153021 408.253125 62.019688 c
+408.253125 143.260312 l
+408.253125 145.126979 407.319792 146.060313 405.453125 146.060313 c
+273.653125 146.060313 l
+271.786458 146.060313 270.853125 145.126979 270.853125 143.260312 c
+270.853125 62.019688 l
+270.853125 60.153021 271.786458 59.219688 273.653125 59.219688 c
 cl
 gsave
 1 setgray
@@ -2272,9 +2355,9 @@ grestore
 [5.55 2.4] 0 setdash
 0 setgray
 gsave
-276.453125 124.219688 m
-290.453125 124.219688 l
-304.453125 124.219688 l
+276.453125 134.719688 m
+290.453125 134.719688 l
+304.453125 134.719688 l
 stroke
 grestore
 1 setlinewidth
@@ -2307,12 +2390,12 @@ grestore
 stroke
 grestore
 } bind def
-290.453 124.22 o
+290.453 134.72 o
 grestore
 /DejaVuSerif 14.000 selectfont
 gsave
 
-315.653 119.32 translate
+315.653 129.82 translate
 0 rotate
 0 0 m /S glyphshow
 9.59082 0 m /A glyphshow
@@ -2322,9 +2405,9 @@ grestore
 2 setlinecap
 1 0 0 setrgbcolor
 gsave
-276.453125 103.672813 m
-290.453125 103.672813 l
-304.453125 103.672813 l
+276.453125 114.172813 m
+290.453125 114.172813 l
+304.453125 114.172813 l
 stroke
 grestore
 1 setlinewidth
@@ -2359,13 +2442,13 @@ grestore
 stroke
 grestore
 } bind def
-290.453 103.673 o
+290.453 114.173 o
 grestore
 0 setgray
 /DejaVuSerif 14.000 selectfont
 gsave
 
-315.653 98.7728 translate
+315.653 109.273 translate
 0 rotate
 0 0 m /A glyphshow
 10.1104 0 m /S glyphshow
@@ -2375,16 +2458,51 @@ grestore
 2 setlinewidth
 1 setlinejoin
 [2 3.3] 0 setdash
+0 0 1 setrgbcolor
 gsave
-276.453125 83.125938 m
-290.453125 83.125938 l
-304.453125 83.125938 l
+276.453125 93.266563 m
+290.453125 93.266563 l
+304.453125 93.266563 l
 stroke
 grestore
+0 setgray
+gsave
+315.653 88.3666 translate
+0 rotate
+/DejaVuSerif 14.0 selectfont
+0 0.359375 moveto
+/A glyphshow
+10.1104 0.359375 moveto
+/D glyphshow
+21.335 0.359375 moveto
+/A glyphshow
+31.4453 0.359375 moveto
+/M glyphshow
+45.7803 0.359375 moveto
+/space glyphshow
+50.2305 0.359375 moveto
+/parenleft glyphshow
+55.6924 0.359375 moveto
+/c glyphshow
+63.5332 0.359375 moveto
+/o glyphshow
+71.9619 0.359375 moveto
+/s glyphshow
+81.3591 0.359375 moveto
+/parenright glyphshow
+grestore
+0 0.502 0 setrgbcolor
+gsave
+276.453125 72.625938 m
+290.453125 72.625938 l
+304.453125 72.625938 l
+stroke
+grestore
+0 setgray
 /DejaVuSerif 14.000 selectfont
 gsave
 
-315.653 78.2259 translate
+315.653 67.7259 translate
 0 rotate
 0 0 m /P glyphshow
 8.79492 0 m /a glyphshow
