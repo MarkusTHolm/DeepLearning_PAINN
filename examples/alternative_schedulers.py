@@ -17,10 +17,13 @@ from src.models import PaiNN, AtomwisePostProcessing
 from src.models import model_loader
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.optim.lr_scheduler import PolynomialLR
+from torch.optim.lr_scheduler import ExponentialLR
 import hydra
 import pickle
 import os
 
+import numpy as np
 import logging
 from omegaconf import DictConfig
 
@@ -78,14 +81,22 @@ def main(cfg):
     )
     
     # Scheduler for learning rate decay
-    scheduler = CosineAnnealingLR(optimizer,
-                                  T_max=cfg.training.cosine_annealing_tMax)
-    # 
-    #  ReduceLROnPlateau(optimizer,
+    if cfg.training.scheduler == 'cosine_annealing':
+        scheduler = CosineAnnealingLR(optimizer,
+                                      T_max=cfg.training.tMax)
+    elif cfg.training.scheduler == 'poly_decay':
+        scheduler = PolynomialLR(optimizer,
+                                 total_iters=cfg.training.tMax,
+                                 power=cfg.training.poly_decay_power)
+    elif cfg.training.scheduler == 'exp_decay':
+        scheduler = ExponentialLR(optimizer,
+                                  gamma=np.exp(-10/cfg.training.tMax))
+
+    # scheduler = ReduceLROnPlateau(optimizer,
     #                               mode='min',
     #                               factor=cfg.training.decay_factor,
     #                               patience=cfg.training.decay_patience)
-    
+                    
     unit_conversion = dm.unit_conversion[cfg.data.target]
     
     # File to save losses
@@ -188,9 +199,15 @@ def main(cfg):
             # Update learning rate scheduler
             scheduler.step()
 
-            if epoch == cfg.training.cosine_annealing_tMax:
-                best_val_loss = smoothed_val_loss
-                break
+            if cfg.training.scheduler == 'cosine_annealing':
+                if epoch == cfg.training.tMax:
+                    break
+            elif cfg.training.scheduler == 'poly_decay':
+                if epoch == cfg.training.tMax:
+                    break
+            elif cfg.training.scheduler == 'exp_decay':
+                if epoch == cfg.training.tMax:
+                    break
 
             # # Early stopping
             # if smoothed_val_loss < best_val_loss:
